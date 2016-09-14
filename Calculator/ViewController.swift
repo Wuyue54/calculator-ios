@@ -16,9 +16,11 @@ class ViewController: UIViewController {
     
     var initialState = 0
     var currentState = 0
+    var btnArray = []
     
     @IBOutlet weak var numberDisplayLabel: UILabel!
     
+    @IBOutlet weak var operatorDisplayLabel: UILabel!
     //operator btns
     @IBOutlet weak var clearBtn: UIButton!
     @IBOutlet weak var PosNegBtn: UIButton!
@@ -46,6 +48,7 @@ class ViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view, typically from a nib.
+        btnArray = [divBtn, mulBtn, minBtn, plusBtn]
     }
 
     override func didReceiveMemoryWarning() {
@@ -77,13 +80,14 @@ class ViewController: UIViewController {
         }
         
         currentNum = Double(numberDisplayLabel.text!)!
-        print("currentNum", currentNum)
+//        print("currentNum", currentNum)
     }
 
     @IBAction func operatorPressedAction(sender: UIButton) {
         var result = currentNum
         switch sender {
         case clearBtn:
+            operatorDisplayLabel.text! = ""
             numberDisplayLabel.text! = "0"
             currentState = 0
             lastNum = 0
@@ -113,23 +117,24 @@ class ViewController: UIViewController {
         case divBtn:
             option = "/"
             checkState(currentState, btn: 1)
-//            numberDisplayLabel.text! = divBtn.titleLabel!.text!
+            operatorDisplayLabel.text! = String(lastNum) + divBtn.titleLabel!.text!
         case mulBtn:
             option = "*"
             checkState(currentState, btn: 1)
-//            numberDisplayLabel.text! = mulBtn.titleLabel!.text!
+            operatorDisplayLabel.text! = String(lastNum) + mulBtn.titleLabel!.text!
         case minBtn:
             option = "-"
             checkState(currentState, btn: 1)
-//            numberDisplayLabel.text! = minBtn.titleLabel!.text!
+            operatorDisplayLabel.text! = String(lastNum) + minBtn.titleLabel!.text!
         case plusBtn:
             option = "+"
             checkState(currentState, btn: 1)
-//            numberDisplayLabel.text! = plusBtn.titleLabel!.text!
+            operatorDisplayLabel.text! = String(lastNum) + plusBtn.titleLabel!.text!
         case eqBtn:
 //            print("eq!")
 //            print(currentState)
             checkState(currentState, btn: 2)
+            operatorDisplayLabel.text! = String(lastNum) + getOperatorChar(option)
 //            numberDisplayLabel.text! = eqBtn.titleLabel!.text!
         default :
             numberDisplayLabel.text! = numberDisplayLabel.text!
@@ -137,6 +142,24 @@ class ViewController: UIViewController {
         
     }
     
+    //function to get operator characters
+    
+    func getOperatorChar(option: String) ->String{
+        switch option{
+        case "+":
+            return plusBtn.titleLabel!.text!
+        case "-":
+            return minBtn.titleLabel!.text!
+        case "*":
+            return mulBtn.titleLabel!.text!
+        case "/":
+            return divBtn.titleLabel!.text!
+        default:
+            return "*.*?"
+        }
+    }
+    
+    //function to calculate
     func getResult(num1: Double, num2: Double, option: String) ->Double{
         var result = 0.0
         switch option{
@@ -173,7 +196,7 @@ class ViewController: UIViewController {
                     lastNum = getResult(lastNum, num2: currentNum, option: option)
                     currentNum = lastNum
                     numberDisplayLabel.text! = String(currentNum)
-                    currentState = 4
+                    currentState = 3
                 }
 
             }
@@ -190,7 +213,7 @@ class ViewController: UIViewController {
                     lastNum = getResult(lastNum, num2: currentNum, option: option)
                     currentNum = lastNum
                     numberDisplayLabel.text! = String(currentNum)
-                    currentState = 4
+                    currentState = 3
                 }
             }
         case 2:
@@ -198,17 +221,17 @@ class ViewController: UIViewController {
                 lastNum = Double(numberDisplayLabel.text!)!
                 currentState = 2
             }else if( btn == 1 ){
-                print("lastNum", lastNum)
-                print("currentNum", currentNum)
+                lastNum = getResult(lastNum, num2: currentNum, option: option)
+                currentNum = lastNum
                 numberDisplayLabel.text! = ""
                 currentState = 0
             }else if( btn == 2){
                 lastNum = getResult(lastNum, num2: currentNum, option: option)
                 currentNum = lastNum
                 numberDisplayLabel.text! = String(currentNum)
-                currentState = 4
+                currentState = 3
             }
-        case 4:
+        case 3:
             if(btn == 0){
                 lastNum = 0.0
                 numberDisplayLabel.text! = ""
@@ -224,16 +247,17 @@ class ViewController: UIViewController {
                     lastNum = getResult(lastNum, num2: currentNum, option: option)
                     currentNum = lastNum
                     numberDisplayLabel.text! = String(currentNum)
-                    currentState = 4
+                    currentState = 3
                 }
             }
         default:
             return
         }
-        print("lastNum", lastNum)
-        print("currentNum", currentNum)
-        print("option", option)
-        print("currentState",currentState)
+        //for debug
+//        print("lastNum", lastNum)
+//        print("currentNum", currentNum)
+//        print("option", option)
+//        print("currentState",currentState)
     }
 }
 
