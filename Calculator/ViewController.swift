@@ -10,8 +10,13 @@ import UIKit
 
 class ViewController: UIViewController {
     
-    var result = 0.0
-
+    var lastNum = 0.0
+    var currentNum = 0.0
+    var option: String = ""
+    
+    var initialState = 0
+    var currentState = 0
+    
     @IBOutlet weak var numberDisplayLabel: UILabel!
     
     //operator btns
@@ -49,6 +54,7 @@ class ViewController: UIViewController {
     }
 
     @IBAction func numPadPressedAction(sender: UIButton) {
+        checkState(currentState, btn: 0)
         let result = numberDisplayLabel.text!
         switch sender{
         case btn0:
@@ -58,7 +64,7 @@ class ViewController: UIViewController {
                 numberDisplayLabel.text! += "0"
             }
         case btnDot:
-            if(result.containsString(".")){
+            if(result.containsString(".")||result.containsString("e")){
                 return
             }else{
                 numberDisplayLabel.text! += "."
@@ -69,38 +75,165 @@ class ViewController: UIViewController {
             }
             numberDisplayLabel.text! += sender.titleLabel!.text!
         }
+        
+        currentNum = Double(numberDisplayLabel.text!)!
+        print("currentNum", currentNum)
     }
 
     @IBAction func operatorPressedAction(sender: UIButton) {
-//        numberDisplayLabel.text! += sender.titleLabel!.text!
-        var result = Double(numberDisplayLabel.text!)!
-              switch sender {
+        var result = currentNum
+        switch sender {
         case clearBtn:
             numberDisplayLabel.text! = "0"
+            currentState = 0
+            lastNum = 0
+            currentNum = 0
+            option = ""
         case PosNegBtn:
             if(result>0){
                 numberDisplayLabel.text! = "-"+String(result)
+                currentNum = Double(numberDisplayLabel.text!)!
             }else{
                 result = -result
                 numberDisplayLabel.text! = String(result)
+                currentNum = Double(numberDisplayLabel.text!)!
             }
-//            numberDisplayLabel.text! = PosNegBtn.titleLabel!.text!
         case percentBtn:
-            result = result / 100
-            numberDisplayLabel.text! = String(result)
+            if(result == 0){
+                print(result)
+                numberDisplayLabel.text! = String(Int(ceil(result)))
+                currentNum = Double(numberDisplayLabel.text!)!
+            }else{
+                result = result / 100
+                print(result)
+                numberDisplayLabel.text! = String(result)
+                currentNum = Double(numberDisplayLabel.text!)!
+            }
+            
         case divBtn:
-            numberDisplayLabel.text! = divBtn.titleLabel!.text!
+            option = "/"
+            checkState(currentState, btn: 1)
+//            numberDisplayLabel.text! = divBtn.titleLabel!.text!
         case mulBtn:
-            numberDisplayLabel.text! = mulBtn.titleLabel!.text!
+            option = "*"
+            checkState(currentState, btn: 1)
+//            numberDisplayLabel.text! = mulBtn.titleLabel!.text!
         case minBtn:
-            numberDisplayLabel.text! = minBtn.titleLabel!.text!
+            option = "-"
+            checkState(currentState, btn: 1)
+//            numberDisplayLabel.text! = minBtn.titleLabel!.text!
         case plusBtn:
-            numberDisplayLabel.text! = plusBtn.titleLabel!.text!
+            option = "+"
+            checkState(currentState, btn: 1)
+//            numberDisplayLabel.text! = plusBtn.titleLabel!.text!
         case eqBtn:
-            numberDisplayLabel.text! = eqBtn.titleLabel!.text!
+//            print("eq!")
+//            print(currentState)
+            checkState(currentState, btn: 2)
+//            numberDisplayLabel.text! = eqBtn.titleLabel!.text!
         default :
             numberDisplayLabel.text! = numberDisplayLabel.text!
         }
+        
+    }
+    
+    func getResult(num1: Double, num2: Double, option: String) ->Double{
+        var result = 0.0
+        switch option{
+        case "+":
+            result = num1 + num2
+        case "-":
+            result = num1 - num2
+        case "*":
+            result = num1 * num2
+        case "/":
+            result = num1 / num2
+        default:
+            break
+        }
+        return result;
+    }
+    
+    //State machine with 4 state
+    //btn: 0 for num, 1 for operators, 2 for eq
+    func checkState(state:Int, btn: Int){
+        print("this is state", state)
+        switch state{
+        case 0:
+            if(btn==0){
+                currentState = 0
+            }else if(btn == 1){
+                lastNum = currentNum
+                numberDisplayLabel.text! = ""
+                currentState = 1
+            }else if(btn == 2 ){
+                if(option == ""){
+                    return
+                }else{
+                    lastNum = getResult(lastNum, num2: currentNum, option: option)
+                    currentNum = lastNum
+                    numberDisplayLabel.text! = String(currentNum)
+                    currentState = 4
+                }
+
+            }
+        case 1:
+            if(btn == 0){
+                currentState = 2
+            }else if(btn == 1){
+                currentState = 1
+                numberDisplayLabel.text! = ""
+            }else if(btn == 2){
+                if(option == ""){
+                    return
+                }else{
+                    lastNum = getResult(lastNum, num2: currentNum, option: option)
+                    currentNum = lastNum
+                    numberDisplayLabel.text! = String(currentNum)
+                    currentState = 4
+                }
+            }
+        case 2:
+            if(btn == 0){
+                lastNum = Double(numberDisplayLabel.text!)!
+                currentState = 2
+            }else if( btn == 1 ){
+                print("lastNum", lastNum)
+                print("currentNum", currentNum)
+                numberDisplayLabel.text! = ""
+                currentState = 0
+            }else if( btn == 2){
+                lastNum = getResult(lastNum, num2: currentNum, option: option)
+                currentNum = lastNum
+                numberDisplayLabel.text! = String(currentNum)
+                currentState = 4
+            }
+        case 4:
+            if(btn == 0){
+                lastNum = 0.0
+                numberDisplayLabel.text! = ""
+                currentState = 0
+            }else if(btn == 1){
+                lastNum = currentNum
+                numberDisplayLabel.text! = ""
+                currentState = 1
+            }else if(btn == 2 ){
+                if(option == ""){
+                    return
+                }else{
+                    lastNum = getResult(lastNum, num2: currentNum, option: option)
+                    currentNum = lastNum
+                    numberDisplayLabel.text! = String(currentNum)
+                    currentState = 4
+                }
+            }
+        default:
+            return
+        }
+        print("lastNum", lastNum)
+        print("currentNum", currentNum)
+        print("option", option)
+        print("currentState",currentState)
     }
 }
 
